@@ -1,7 +1,7 @@
 {
   "name": "retrieve-keyframes",
   "version": "1.0.0",
-  "description": "get time position of all keyframes in mp4/mkv ",
+  "description": "get time position of all keyframes in mp4/mkv/webm",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,6 +13,7 @@
   "keywords": [
     "mkv",
     "mp4",
+    "webm",
     "keyframes",
     "iframes",
     "video",
