@@ -1,0 +1,30 @@
+{
+  "name": "retrieve-keyframes",
+  "version": "1.0.0",
+  "description": "get time position of all keyframes in mp4/mkv ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ivshti/retrieve-keyframes"
+  },
+  "keywords": [
+    "mkv",
+    "mp4",
+    "keyframes",
+    "iframes",
+    "video",
+    "transcoding"
+  ],
+  "author": "Ivo Georgiev <ivo@strem.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ivshti/retrieve-keyframes/issues"
+  },
+  "homepage": "https://github.com/Ivshti/retrieve-keyframes",
+  "dependencies": {
+    "matroska": "^2.2.2"
+  }
+}
