@@ -44,7 +44,13 @@ function getForMkv(url, cb) {
 }
 
 function getForMp4(url, cb) {
-	console.log("WARNING: TODO url");
+	cb( new Error("mp4 not supported yet"));
+	// we need the stss box - moov.traks[<trackNum>].mdia.minf.stbl.stss
+	// https://github.com/gpac/mp4box.js/blob/master/src/parsing/stss.js
+	// http://wiki.multimedia.cx/?title=QuickTime_container#stss
+	// we also may need stts to get their time
+	// https://github.com/gpac/mp4box.js/blob/master/src/parsing/stts.js
+
 }
 
 module.exports = {
