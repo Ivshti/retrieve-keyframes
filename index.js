@@ -56,7 +56,7 @@ function getForMp4(url, cb) {
 module.exports = {
 	get: function(url, container, cb) {
 		if (typeof(container) === "undefined") container = url.match(/\.mkv/) ? "mkv" : "mp4"; // hack-ish way to infer container
-		if (container === "matroska") container = mkv;
+		if (container === "matroska") container = "mkv";
 		(container === "mkv" ? getForMkv : getForMp4)(url, cb)
 	},
 	getForMkv: getForMkv,
