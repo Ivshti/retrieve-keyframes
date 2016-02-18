@@ -88,9 +88,7 @@ function getForMp4(url, cb) {
 
 }
 
-getForMp4("http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4", function(err, res) {
-	console.log(err,res)
-})
+//getForMp4("http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4", function(err, res) { console.log(err,res) })
 
 module.exports = {
 	get: function(url, container, cb) {
