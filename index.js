@@ -75,7 +75,8 @@ function getForMp4(url, cb) {
 
 		try {
 			// stss - "Sync samples are also known as keyframes or intra-coded frames."
-			cb(null, box.inputIsoFile.moov.traks[0].mdia.minf.stbl.stss.sample_numbers)
+			// WARNING: ffmpeg reads key_frame=1 at best_effort_timestamp and pts_time exactly 1ms after what stss gives us; research why
+			cb(null, box.inputIsoFile.moov.traks[0].mdia.minf.stbl.stss.sample_numbers);
 		} catch(e) { cb(e) } 
 	}
 
