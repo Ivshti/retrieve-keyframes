@@ -26,6 +26,8 @@
   },
   "homepage": "https://github.com/Ivshti/retrieve-keyframes",
   "dependencies": {
-    "matroska": "^2.2.2"
+    "matroska": "^2.2.2",
+    "mp4box": "^0.3.8",
+    "needle": "^1.0.0"
   }
 }

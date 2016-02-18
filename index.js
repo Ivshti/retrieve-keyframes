@@ -1,4 +1,6 @@
 var mkv = require('matroska')
+var mp4box = require('mp4box')
+var needle = require('needle')
 
 function onlySeekCues() {
 	return {
@@ -44,7 +46,37 @@ function getForMkv(url, cb) {
 }
 
 function getForMp4(url, cb) {
-	cb( new Error("mp4 not supported yet"));
+	return cb( new Error("mp4 not supported yet"));
+	
+	var box = new mp4box.MP4Box();
+	var err, res, pos = 0;
+
+	function toArrayBuffer(buffer) {
+		var ab = new ArrayBuffer(buffer.length);
+		var view = new Uint8Array(ab);
+		for (var i = 0; i < buffer.length; ++i) view[i] = buffer[i];
+		return ab;
+	}
+
+	var stream = needle.get(url)
+	.on('error', cb)
+	.on('data', function(buf) { 
+		var b = toArrayBuffer(buf);
+		b.fileStart = pos;
+		pos+=b.byteLength;
+		box.appendBuffer(b); box.flush();
+	})
+
+	box.onError = cb;
+	box.onReady = function(info) {
+		stream.end();
+
+		if (!info) return cb(new Error("no info returned"));
+		if (!info.videoTracks[0]) return cb(new Error("no videoTracks[0]"))
+
+	}
+
+	
 	// we need the stss box - moov.traks[<trackNum>].mdia.minf.stbl.stss
 	// https://github.com/gpac/mp4box.js/blob/master/src/parsing/stss.js
 	// http://wiki.multimedia.cx/?title=QuickTime_container#stss
@@ -52,6 +84,10 @@ function getForMp4(url, cb) {
 	// https://github.com/gpac/mp4box.js/blob/master/src/parsing/stts.js
 
 }
+
+//getForMp4("http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4", function(err, res) {
+//	console.log(err,res)
+//})
 
 module.exports = {
 	get: function(url, container, cb) {
