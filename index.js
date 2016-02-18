@@ -45,9 +45,7 @@ function getForMkv(url, cb) {
 	})
 }
 
-function getForMp4(url, cb) {
-	return cb( new Error("mp4 not supported yet"));
-	
+function getForMp4(url, cb) {	
 	var box = new mp4box.MP4Box();
 	var err, res, pos = 0;
 
@@ -74,20 +72,25 @@ function getForMp4(url, cb) {
 		if (!info) return cb(new Error("no info returned"));
 		if (!info.videoTracks[0]) return cb(new Error("no videoTracks[0]"))
 
+		try {
+			// stss - "Sync samples are also known as keyframes or intra-coded frames."
+			cb(null, box.inputIsoFile.moov.traks[0].mdia.minf.stbl.stss.sample_numbers)
+		} catch(e) { cb(e) } 
 	}
 
 	
 	// we need the stss box - moov.traks[<trackNum>].mdia.minf.stbl.stss
 	// https://github.com/gpac/mp4box.js/blob/master/src/parsing/stss.js
 	// http://wiki.multimedia.cx/?title=QuickTime_container#stss
+	// "Sync samples are also known as keyframes or intra-coded frames."
 	// we also may need stts to get their time
 	// https://github.com/gpac/mp4box.js/blob/master/src/parsing/stts.js
 
 }
 
-//getForMp4("http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4", function(err, res) {
-//	console.log(err,res)
-//})
+getForMp4("http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4", function(err, res) {
+	console.log(err,res)
+})
 
 module.exports = {
 	get: function(url, container, cb) {
