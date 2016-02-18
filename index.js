@@ -62,11 +62,12 @@ function getForMp4(url, cb) {
 		var b = toArrayBuffer(buf);
 		b.fileStart = pos;
 		pos+=b.byteLength;
-		box.appendBuffer(b); box.flush();
+		box.appendBuffer(b);
 	})
 
 	box.onError = cb;
 	box.onReady = function(info) {
+		box.flush();
 		stream.end();
 
 		if (!info) return cb(new Error("no info returned"));
