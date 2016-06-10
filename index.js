@@ -76,8 +76,16 @@ function getForMp4(url, cb) {
 		try {
 			// stss - "Sync samples are also known as keyframes or intra-coded frames."
 			// WARNING: ffmpeg reads key_frame=1 at best_effort_timestamp and pts_time exactly 1ms after what stss gives us; research why
-			cb(null, box.inputIsoFile.moov.traks[0].mdia.minf.stbl.stss.sample_numbers);
-		} catch(e) { cb(e) } 
+			var track = box.inputIsoFile.moov.traks[0];
+			var stsz = track.mdia.minf.stbl.stsz;
+			if (stsz.sample_size) {
+				cb(new Error("mp4 uniform size of stsz"));
+			} else {
+				var sizes = stsz.sample_sizes;
+				var ratio = stsz.size / stsz.sample_count;
+				cb(null, track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { return (x-1)*ratio*10 }));
+			}
+		} catch(e) { cb(e) }
 	}
 
 	
@@ -91,6 +99,8 @@ function getForMp4(url, cb) {
 }
 
 //getForMp4("http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4", function(err, res) { console.log(err,res) })
+
+//getForMp4("http://ia902508.us.archive.org/17/items/CartoonClassics/Krazy_Kat_-_Keeping_Up_With_Krazy.mp4", function(err, res) { console.log(err,res) });
 
 module.exports = {
 	get: function(url, container, cb) {
