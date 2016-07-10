@@ -39,7 +39,7 @@ function getForMkv(url, cb) {
 
 		cb(null, cues.map(function(cue) {
 			// children[0] is CueTime
-			return cue.children[0].getUInt()
+			return { timestamp: cue.children[0].getUInt() }
 		}))
 		// "doc -> Segment -> Cues -> CuePoint []"
 	})
@@ -83,7 +83,10 @@ function getForMp4(url, cb) {
 			} else {
 				var sizes = stsz.sample_sizes;
 				var ratio = stsz.size / stsz.sample_count;
-				cb(null, track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { return (x-1)*ratio*10 }));
+				cb(null, track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { return { 
+						timestamp: (x-1)*ratio*10, 
+						index: x
+				} }));
 			}
 		} catch(e) { cb(e) }
 	}
