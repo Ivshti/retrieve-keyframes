@@ -76,35 +76,34 @@ function getForMp4(url, cb) {
 
 		try {
 			// stss - "Sync samples are also known as keyframes or intra-coded frames."
-			// WARNING: ffmpeg reads key_frame=1 at best_effort_timestamp and pts_time exactly 1ms after what stss gives us; research why
 			var track = box.inputIsoFile.moov.traks[0];
-			var stsz = track.mdia.minf.stbl.stsz;
-			if (stsz.sample_size) {
-				cb(new Error("mp4 uniform size of stsz"));
-			} else {
-				var sizes = stsz.sample_sizes;
-				var ratio = stsz.size / stsz.sample_count;
-				cb(null, track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { return { 
-						timestamp: (x-1)*ratio*10, 
-						index: x
-				} }));
-			}
+			//var stsz = track.mdia.minf.stbl.stsz; // sample table sizes - that's in bytes
+			var stts = track.mdia.minf.stbl.stts; // sample table time to sample map
+			var mdhd = track.mdia.mdhd; // media header
+
+			// we need the stss box - moov.traks[<trackNum>].mdia.minf.stbl.stss - http://wiki.multimedia.cx/?title=QuickTime_container#stss
+			// "Sync samples are also known as keyframes or intra-coded frames."
+			// This would give us the frame number
+
+			// from stts documentation at https://wiki.multimedia.cx/?title=QuickTime_container#stss
+			//    duration = (sample_count1 * sample_time_delta1 + ... + sample_countN * sample_time_deltaN ) / timescale
+			//    now, replace sample_count with our sample index-1 and we get the exact timestamp of our frame IN SECONDS
+
+			var frames = track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { return { 
+					timestamp: Math.round( ((x-1) * stts.sample_deltas[0] / mdhd.timescale) * 1000 ), // warning: hardcoded to first track 
+					index: x
+			} });
+
+			cb(null, frames);
 		} catch(e) { cb(e) }
 	}
-
-	
-	// we need the stss box - moov.traks[<trackNum>].mdia.minf.stbl.stss
-	// https://github.com/gpac/mp4box.js/blob/master/src/parsing/stss.js
-	// http://wiki.multimedia.cx/?title=QuickTime_container#stss
-	// "Sync samples are also known as keyframes or intra-coded frames."
-	// we also may need stts to get their time
-	// https://github.com/gpac/mp4box.js/blob/master/src/parsing/stts.js
-
 }
 
 //getForMp4("http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4", function(err, res) { console.log(err,res) })
-
 //getForMp4("http://ia902508.us.archive.org/17/items/CartoonClassics/Krazy_Kat_-_Keeping_Up_With_Krazy.mp4", function(err, res) { console.log(err,res) });
+// ffprobe -select_streams v:0 -show_frames -of compact -i http://ia902508.us.archive.org/17/items/CartoonClassics/Krazy_Kat_-_Keeping_Up_With_Krazy.mp4  | grep 'key_frame=1' | head -n 50
+
+// getForMkv("http://jell.yfish.us/media/jellyfish-3-mbps-hd-h264.mkv", function(err, res) { console.log(err, res) })
 
 module.exports = {
 	get: function(url, container, cb) {
