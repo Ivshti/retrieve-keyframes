@@ -1,6 +1,6 @@
 {
   "name": "retrieve-keyframes",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "get time position of all keyframes in mp4/mkv/webm",
   "main": "index.js",
   "scripts": {
