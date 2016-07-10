@@ -39,6 +39,7 @@ function getForMkv(url, cb) {
 
 		cb(null, cues.map(function(cue) {
 			// children[0] is CueTime
+			// judging by this muxer, timestamp is pts: https://www.ffmpeg.org/doxygen/0.6/matroskaenc_8c-source.html#l00373
 			return { timestamp: cue.children[0].getUInt() }
 		}))
 		// "doc -> Segment -> Cues -> CuePoint []"

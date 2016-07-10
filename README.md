@@ -11,4 +11,6 @@ get time position of all keyframes in mp4/mkv/webm
 
 **container** - ``"matroska"`` or ``"mp4"``
 
-**cb** - ``callback(err, times)``
+**cb** - ``callback(err, frames)``
+
+##### ``frames`` is an array of objects: `{ index: Number, timestamp: Number }`; the index is the numeric index of the frame, applicable when we use mp4; the timestamp is the pts value of the frame 
