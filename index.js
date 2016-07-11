@@ -88,8 +88,9 @@ function getForMp4(url, cb) {
 			// from stts documentation at https://wiki.multimedia.cx/?title=QuickTime_container#stss
 			//    duration = (sample_count1 * sample_time_delta1 + ... + sample_countN * sample_time_deltaN ) / timescale
 			//    now, replace sample_count with our sample index-1 and we get the exact timestamp of our frame IN SECONDS
-
+			
 			var frames = track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { return { 
+					// WARNING: in the BBB video, to match ffmpeg we need x+1, in the other, we need x-1; wtf?
 					timestamp: Math.round( ((x-1) * stts.sample_deltas[0] / mdhd.timescale) * 1000 ), // warning: hardcoded to first track 
 					index: x
 			} });
