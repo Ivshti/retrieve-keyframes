@@ -95,6 +95,8 @@ function getForMp4(url, cb) {
 					index: x
 			} });
 
+			if (frames[0] && frames[0].index !== 1) frames.unshift({ timestamp: 0, index: 1 }); // http://bit.ly/1MKue5R - there's a keyframe at the beginning
+
 			cb(null, frames);
 		} catch(e) { cb(e) }
 	}
