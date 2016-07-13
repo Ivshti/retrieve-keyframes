@@ -40,7 +40,7 @@ function getForMkv(url, cb) {
 		var frames = cues.map(function(cue) {
 			// children[0] is CueTime
 			// judging by this muxer, timestamp is pts: https://www.ffmpeg.org/doxygen/0.6/matroskaenc_8c-source.html#l00373
-			return { timestamp: cue.children[0].getUInt() }
+			return { timestamp: cue.children[0].getUInt(), pts: cue.children[0].getUInt() }
 		})
 
 		//if (frames[0] && frames[0].timestamp !== 0) frames.unshift({ timestamp: 0 })
@@ -93,13 +93,13 @@ function getForMp4(url, cb) {
 			//    duration = (sample_count1 * sample_time_delta1 + ... + sample_countN * sample_time_deltaN ) / timescale
 			//    now, replace sample_count with our sample index-1 and we get the exact timestamp of our frame IN SECONDS
 			
-			var frames = track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { return { 
-					// WARNING: in the BBB video, to match ffmpeg we need x+1, in the other, we need x-1; wtf?
-					timestamp: Math.round( ((x-1) * stts.sample_deltas[0] / mdhd.timescale) * 1000 ), // warning: hardcoded to first track 
-					index: x
-			} });
+			var frames = track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { 
+				// WARNING: in the BBB video, to match ffmpeg we need x+1, in the other, we need x-1; wtf?
+				var dts = Math.round( ((x-1) * stts.sample_deltas[0] / mdhd.timescale) * 1000 ); // warning: hardcoded to first track
+				return { dts: dts, timestamp: dts, index: x }
+			});
 
-			if (frames[0] && frames[0].index !== 1) frames.unshift({ timestamp: 0, index: 1 }); // http://bit.ly/1MKue5R - there's a keyframe at the beginning
+			if (frames[0] && frames[0].index !== 1) frames.unshift({ timestamp: 0, dts: 0, index: 1 }); // http://bit.ly/1MKue5R - there's a keyframe at the beginning
 
 			cb(null, frames);
 		} catch(e) { cb(e) }
