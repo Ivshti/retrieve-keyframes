@@ -37,11 +37,15 @@ function getForMkv(url, cb) {
 
 		if (! cues.length) return cb(new Error("no CuePoints"));
 
-		cb(null, cues.map(function(cue) {
+		var frames = cues.map(function(cue) {
 			// children[0] is CueTime
 			// judging by this muxer, timestamp is pts: https://www.ffmpeg.org/doxygen/0.6/matroskaenc_8c-source.html#l00373
 			return { timestamp: cue.children[0].getUInt() }
-		}))
+		})
+
+		//if (frames[0] && frames[0].timestamp !== 0) frames.unshift({ timestamp: 0 })
+		
+		cb(null, frames)
 		// "doc -> Segment -> Cues -> CuePoint []"
 	})
 }
