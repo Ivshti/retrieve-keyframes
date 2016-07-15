@@ -104,8 +104,8 @@ function getForMp4(url, cb) {
 			var frames = track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { 
 				// WARNING: in the BBB video, to match ffmpeg we need x+1, in the other, we need x-1; wtf?
 				// samples[x].dts/mdhd.timescale
-				var dts = Math.round( allDts[x-1] / mdhd.timescale * 1000 );
-				var pts = Math.round( allPts[x-1] / mdhd.timescale * 1000 );
+				var dts = allDts[x-1] / mdhd.timescale * 1000;
+				var pts = allPts[x-1] / mdhd.timescale * 1000;
 				return { dts: dts, pts: pts, timestamp: pts, index: x }
 			});
 
