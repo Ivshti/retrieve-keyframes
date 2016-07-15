@@ -78,35 +78,45 @@ function getForMp4(url, cb) {
 		if (!info) return cb(new Error("no info returned"));
 		if (!info.videoTracks[0]) return cb(new Error("no videoTracks[0]"))
 
+		//box.inputIsoFile.buildSampleLists();
+		//var samples = box.inputIsoFile.moov.traks[0].samples;
+
 		try {
-			// stss - "Sync samples are also known as keyframes or intra-coded frames."
 			var track = box.inputIsoFile.moov.traks[0];
+
 			//var stsz = track.mdia.minf.stbl.stsz; // sample table sizes - that's in bytes
 			var stts = track.mdia.minf.stbl.stts; // sample table time to sample map
 			var mdhd = track.mdia.mdhd; // media header
 
-			// TODO: use ctts to build pts 
-			//console.log(mdhd, stts, track.mdia.minf.stbl.ctts)
-
-			// we need the stss box - moov.traks[<trackNum>].mdia.minf.stbl.stss - http://wiki.multimedia.cx/?title=QuickTime_container#stss
-			// "Sync samples are also known as keyframes or intra-coded frames."
-			// This would give us the frame number
-
 			// from stts documentation at https://wiki.multimedia.cx/?title=QuickTime_container#stss
 			//    duration = (sample_count1 * sample_time_delta1 + ... + sample_countN * sample_time_deltaN ) / timescale
-			//    now, replace sample_count with our sample index-1 and we get the exact timestamp of our frame IN SECONDS
-			
+			var allDts = [ ];
+			iterateCounts(stts.sample_counts, stts.sample_deltas, function(delta, idx) { allDts.push(idx * delta/mdhd.timescale) });
+
+			// we need the stss box - moov.traks[<trackNum>].mdia.minf.stbl.stss - http://wiki.multimedia.cx/?title=QuickTime_container#stss
+			// stss - "Sync samples are also known as keyframes or intra-coded frames."
 			var frames = track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { 
 				// WARNING: in the BBB video, to match ffmpeg we need x+1, in the other, we need x-1; wtf?
-				var dts = Math.round( ((x-1) * stts.sample_deltas[0] / mdhd.timescale) * 1000 ); // warning: hardcoded to first track
+				// samples[x].dts/mdhd.timescale
+				var dts = Math.round( allDts[x-1] * 1000 );
 				return { dts: dts, timestamp: dts, index: x }
 			});
+
+			// TODO: use ctts to build pts 
+			//console.log(track.mdia.minf.stbl.ctts.sample_counts.length, track.mdia.minf.stbl.ctts.sample_offsets.length, mdhd)
 
 			if (frames[0] && frames[0].index !== 1) frames.unshift({ timestamp: 0, dts: 0, index: 1 }); // http://bit.ly/1MKue5R - there's a keyframe at the beginning
 
 			cb(null, frames);
 		} catch(e) { cb(e) }
 	}
+}
+
+function iterateCounts(counts, values, fn) {
+	var idx = 0;
+	counts.forEach(function(count, i) {
+		for (var j = 0; j!=count; j++) { fn(values[i], idx++) }
+	})
 }
 
 module.exports = {
