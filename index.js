@@ -86,24 +86,28 @@ function getForMp4(url, cb) {
 
 			//var stsz = track.mdia.minf.stbl.stsz; // sample table sizes - that's in bytes
 			var stts = track.mdia.minf.stbl.stts; // sample table time to sample map
+			var ctts = track.mdia.minf.stbl.ctts; // Composition Time Offset  - used to convert DTS to PTS
 			var mdhd = track.mdia.mdhd; // media header
 
 			// from stts documentation at https://wiki.multimedia.cx/?title=QuickTime_container#stss
 			//    duration = (sample_count1 * sample_time_delta1 + ... + sample_countN * sample_time_deltaN ) / timescale
 			var allDts = [ ];
-			iterateCounts(stts.sample_counts, stts.sample_deltas, function(delta, idx) { allDts.push(idx * delta/mdhd.timescale) });
+			iterateCounts(stts.sample_counts, stts.sample_deltas, function(delta, idx) { allDts.push(idx * delta) });
+
+			// use ctts to build pts - https://wiki.multimedia.cx/?title=QuickTime_container#ctts
+			//console.log(track.mdia.minf.stbl.ctts.sample_counts.length, track.mdia.minf.stbl.ctts.sample_offsets.length, mdhd)
+			var allPts = [];
+			iterateCounts(ctts.sample_counts, ctts.sample_offsets, function(offset, idx) { allPts.push(allDts[idx] + offset) });
 
 			// we need the stss box - moov.traks[<trackNum>].mdia.minf.stbl.stss - http://wiki.multimedia.cx/?title=QuickTime_container#stss
 			// stss - "Sync samples are also known as keyframes or intra-coded frames."
 			var frames = track.mdia.minf.stbl.stss.sample_numbers.map(function(x) { 
 				// WARNING: in the BBB video, to match ffmpeg we need x+1, in the other, we need x-1; wtf?
 				// samples[x].dts/mdhd.timescale
-				var dts = Math.round( allDts[x-1] * 1000 );
-				return { dts: dts, timestamp: dts, index: x }
+				var dts = Math.round( allDts[x-1] / mdhd.timescale * 1000 );
+				var pts = Math.round( allPts[x-1] / mdhd.timescale * 1000 );
+				return { dts: dts, pts: pts, timestamp: pts, index: x }
 			});
-
-			// TODO: use ctts to build pts 
-			//console.log(track.mdia.minf.stbl.ctts.sample_counts.length, track.mdia.minf.stbl.ctts.sample_offsets.length, mdhd)
 
 			if (frames[0] && frames[0].index !== 1) frames.unshift({ timestamp: 0, dts: 0, index: 1 }); // http://bit.ly/1MKue5R - there's a keyframe at the beginning
 
