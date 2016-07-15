@@ -85,6 +85,9 @@ function getForMp4(url, cb) {
 			var stts = track.mdia.minf.stbl.stts; // sample table time to sample map
 			var mdhd = track.mdia.mdhd; // media header
 
+			// TODO: use ctts to build pts 
+			//console.log(mdhd, stts, track.mdia.minf.stbl.ctts)
+
 			// we need the stss box - moov.traks[<trackNum>].mdia.minf.stbl.stss - http://wiki.multimedia.cx/?title=QuickTime_container#stss
 			// "Sync samples are also known as keyframes or intra-coded frames."
 			// This would give us the frame number
@@ -105,12 +108,6 @@ function getForMp4(url, cb) {
 		} catch(e) { cb(e) }
 	}
 }
-
-//getForMp4("http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4", function(err, res) { console.log(err,res) })
-//getForMp4("http://ia902508.us.archive.org/17/items/CartoonClassics/Krazy_Kat_-_Keeping_Up_With_Krazy.mp4", function(err, res) { console.log(err,res) });
-// ffprobe -select_streams v:0 -show_frames -of compact -i http://ia902508.us.archive.org/17/items/CartoonClassics/Krazy_Kat_-_Keeping_Up_With_Krazy.mp4  | grep 'key_frame=1' | head -n 50
-
-// getForMkv("http://jell.yfish.us/media/jellyfish-3-mbps-hd-h264.mkv", function(err, res) { console.log(err, res) })
 
 module.exports = {
 	get: function(url, container, cb) {
