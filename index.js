@@ -97,7 +97,7 @@ function getForMp4(url, cb) {
 			// use ctts to build pts - https://wiki.multimedia.cx/?title=QuickTime_container#ctts
 			//console.log(track.mdia.minf.stbl.ctts.sample_counts.length, track.mdia.minf.stbl.ctts.sample_offsets.length, mdhd)
 			var allPts = [];
-			iterateCounts(ctts.sample_counts, ctts.sample_offsets, function(offset, idx) { allPts.push(allDts[idx] + offset) });
+			if (ctts) iterateCounts(ctts.sample_counts, ctts.sample_offsets, function(offset, idx) { allPts.push(allDts[idx] + offset) });
 
 			// we need the stss box - moov.traks[<trackNum>].mdia.minf.stbl.stss - http://wiki.multimedia.cx/?title=QuickTime_container#stss
 			// stss - "Sync samples are also known as keyframes or intra-coded frames."
@@ -105,7 +105,7 @@ function getForMp4(url, cb) {
 				// WARNING: in the BBB video, to match ffmpeg we need x+1, in the other, we need x-1; wtf?
 				// samples[x].dts/mdhd.timescale
 				var dts = allDts[x-1] / mdhd.timescale * 1000;
-				var pts = allPts[x-1] / mdhd.timescale * 1000;
+				var pts = ctts ? allPts[x-1] / mdhd.timescale * 1000 : dts;
 				return { dts: dts, pts: pts, timestamp: pts, index: x }
 			});
 
