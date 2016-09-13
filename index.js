@@ -17,8 +17,9 @@ function onlySeekCues() {
 
 function atPath() {
 	var args = Array.prototype.slice.call(arguments)
-	var arg
-	var data = args.shift()
+	var arg // string
+	var data = args.shift() // object
+	if (! data) return
 	while (arg = args.shift()) {
 		if (! arg) return data;
 		if (! data.children) return;
@@ -30,6 +31,8 @@ function atPath() {
 function getForMkv(url, cb) {
 	var decoder = new mkv.Decoder(onlySeekCues());
 	decoder.parseEbmlIDs(url, [ mkv.Schema.byName.Cues ], function(err, doc) {
+		if (err) return cb(err);
+		
 		var cues = atPath(doc, "Segment", "Cues");
 		if (! (cues && cues.children && cues.children.length)) return cb(new Error("no cues found in doc -> Segment -> Cues"));
 
