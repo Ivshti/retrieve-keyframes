@@ -43,7 +43,8 @@ function getForMkv(url, cb) {
 		var frames = cues.map(function(cue) {
 			// children[0] is CueTime
 			// judging by this muxer, timestamp is pts: https://www.ffmpeg.org/doxygen/0.6/matroskaenc_8c-source.html#l00373
-			return { timestamp: cue.children[0].getUInt(), pts: cue.children[0].getUInt() }
+			var t = cue.children[0].getUInt()
+			return { timestamp: t, pts: t, dts: t }
 		})
 
 		//if (frames[0] && frames[0].timestamp !== 0) frames.unshift({ timestamp: 0 })
