@@ -1,6 +1,6 @@
 {
   "name": "retrieve-keyframes",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "get time position of all keyframes in mp4/mkv/webm",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "transcoding"
   ],
   "bin": {
-	"retrieve-keyframes": "cli.js"
+    "retrieve-keyframes": "cli.js"
   },
   "author": "Ivo Georgiev <ivo@strem.io>",
   "license": "MIT",
