@@ -67,10 +67,11 @@ function getForMp4(url, cb) {
 
 	var stream = needle.get(url)
 	.on('error', cb)
+	.on('end', function(e) { box.flush(); if (e) cb(e) })
 	.on('data', function(buf) { 
 		var b = toArrayBuffer(buf);
 		b.fileStart = pos;
-		pos+=b.byteLength;
+		pos += b.byteLength;
 		box.appendBuffer(b);
 	})
 
