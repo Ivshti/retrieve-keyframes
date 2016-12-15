@@ -1,6 +1,7 @@
 var mkv = require('matroska')
 var mp4box = require('mp4box')
 var needle = require('needle')
+var fs = require('fs')
 
 function onlySeekCues() {
 	return {
@@ -65,20 +66,31 @@ function getForMp4(url, cb) {
 		return ab;
 	}
 
-	var stream = needle.get(url)
-	.on('error', cb)
-	.on('end', function(e) { box.flush(); if (e) cb(e) })
-	.on('data', function(buf) { 
+	function onData(buf) { 
 		var b = toArrayBuffer(buf);
 		b.fileStart = pos;
 		pos += b.byteLength;
 		box.appendBuffer(b);
-	})
+	}
+
+	var stream;
+	if (/^http(s?):\/\//.test(url)) {
+		stream = needle.get(url)
+		.on('error', cb)
+		.on('end', function(e) { box.flush(); if (e) cb(e) })
+		.on('data', onData)
+	} else {
+		stream = fs.createReadStream(url)
+		.on('error', cb)
+		.on('end', function() { box.flush() })
+		.on('data', onData)
+	}
+
 
 	box.onError = cb;
 	box.onReady = function(info) {
 		box.flush();
-		stream.end();
+		stream.close ? stream.close() : stream.end();
 
 		if (!info) return cb(new Error("no info returned"));
 		if (!info.videoTracks[0]) return cb(new Error("no videoTracks[0]"))
