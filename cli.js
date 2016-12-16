@@ -3,7 +3,7 @@
 var retrieveKeyframes = require('./')
 
 var file = process.argv[2]
-var fn = file.match('.mp4$') ? retrieveKeyframes.getForMp4 : (file.match('.mkv$') ? retrieveKeyframes.getForMkv : null)
+var fn = file.match('.mp4$') ? retrieveKeyframes.getForMp4 : (file.match('.mkv$') || file.match('.webm$') ? retrieveKeyframes.getForMkv : null)
 
 var isSeconds = process.argv.some(function(arg) { return arg === '--seconds' })
 
