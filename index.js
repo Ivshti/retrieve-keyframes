@@ -1,6 +1,7 @@
 var mkv = require('matroska')
 var mp4box = require('mp4box')
 var needle = require('needle')
+var fs = require('fs')
 
 function onlySeekCues() {
 	return {
@@ -17,8 +18,9 @@ function onlySeekCues() {
 
 function atPath() {
 	var args = Array.prototype.slice.call(arguments)
-	var arg
-	var data = args.shift()
+	var arg // string
+	var data = args.shift() // object
+	if (! data) return
 	while (arg = args.shift()) {
 		if (! arg) return data;
 		if (! data.children) return;
@@ -30,6 +32,8 @@ function atPath() {
 function getForMkv(url, cb) {
 	var decoder = new mkv.Decoder(onlySeekCues());
 	decoder.parseEbmlIDs(url, [ mkv.Schema.byName.Cues ], function(err, doc) {
+		if (err) return cb(err);
+		
 		var cues = atPath(doc, "Segment", "Cues");
 		if (! (cues && cues.children && cues.children.length)) return cb(new Error("no cues found in doc -> Segment -> Cues"));
 
@@ -40,7 +44,8 @@ function getForMkv(url, cb) {
 		var frames = cues.map(function(cue) {
 			// children[0] is CueTime
 			// judging by this muxer, timestamp is pts: https://www.ffmpeg.org/doxygen/0.6/matroskaenc_8c-source.html#l00373
-			return { timestamp: cue.children[0].getUInt(), pts: cue.children[0].getUInt() }
+			var t = cue.children[0].getUInt()
+			return { timestamp: t, pts: t, dts: t }
 		})
 
 		//if (frames[0] && frames[0].timestamp !== 0) frames.unshift({ timestamp: 0 })
@@ -61,19 +66,31 @@ function getForMp4(url, cb) {
 		return ab;
 	}
 
-	var stream = needle.get(url)
-	.on('error', cb)
-	.on('data', function(buf) { 
+	function onData(buf) { 
 		var b = toArrayBuffer(buf);
 		b.fileStart = pos;
-		pos+=b.byteLength;
+		pos += b.byteLength;
 		box.appendBuffer(b);
-	})
+	}
+
+	var stream;
+	if (/^http(s?):\/\//.test(url)) {
+		stream = needle.get(url)
+		.on('error', cb)
+		.on('end', function(e) { box.flush(); if (e) cb(e) })
+		.on('data', onData)
+	} else {
+		stream = fs.createReadStream(url)
+		.on('error', cb)
+		.on('end', function() { box.flush() })
+		.on('data', onData)
+	}
+
 
 	box.onError = cb;
 	box.onReady = function(info) {
 		box.flush();
-		stream.end();
+		stream.close ? stream.close() : stream.end();
 
 		if (!info) return cb(new Error("no info returned"));
 		if (!info.videoTracks[0]) return cb(new Error("no videoTracks[0]"))

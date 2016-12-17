@@ -14,3 +14,15 @@ get time position of all keyframes in mp4/mkv/webm
 **cb** - ``callback(err, frames)``
 
 ##### ``frames`` is an array of objects: `{ index: Number, timestamp: Number }`; the index is the numeric index of the frame, applicable when we use mp4; the timestamp is the pts value of the frame 
+
+
+
+## Examples
+
+```bash
+./cli.js http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4
+```
+
+```bash
+./cli.js http://jell.yfish.us/media/jellyfish-3-mbps-hd-h264.mkv
+```
