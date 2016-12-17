@@ -31,6 +31,6 @@
   "dependencies": {
     "matroska": "Ivshti/node-matroska",
     "mp4box": "^0.3.8",
-    "needle": "^1.0.0"
+    "needle": "1.0.x"
   }
 }
