@@ -26,3 +26,7 @@ get time position of all keyframes in mp4/mkv/webm
 ```bash
 ./cli.js http://jell.yfish.us/media/jellyfish-3-mbps-hd-h264.mkv
 ```
+
+```bash
+./cli.js http://ia902508.us.archive.org/17/items/CartoonClassics/Krazy_Kat_-_Keeping_Up_With_Krazy.mp4
+```
