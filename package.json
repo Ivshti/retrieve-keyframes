@@ -1,6 +1,6 @@
 {
   "name": "retrieve-keyframes",
-  "version": "2.8.0",
+  "version": "2.8.2",
   "description": "get time position of all keyframes in mp4/mkv/webm",
   "main": "index.js",
   "scripts": {
@@ -31,6 +31,6 @@
   "dependencies": {
     "matroska": "Ivshti/node-matroska",
     "mp4box": "^0.3.8",
-    "needle": "^1.0.0"
+    "needle": "1.1.x"
   }
 }
