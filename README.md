@@ -9,7 +9,7 @@ get time position of all keyframes in mp4/mkv/webm
 
 **url** - URL (http) to video file
 
-**container** - ``"matroska"`` or ``"mp4"``
+**container** - ``"matroska"`` (mkv or webm) or ``"mp4"``
 
 **cb** - ``callback(err, frames)``
 
