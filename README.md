@@ -26,3 +26,9 @@ get time position of all keyframes in mp4/mkv/webm
 ```bash
 ./cli.js http://jell.yfish.us/media/jellyfish-3-mbps-hd-h264.mkv
 ```
+
+
+## Comparison with ffprobe
+
+A script is included - `keyframes.sh` - to compare results to ffprobe. All the results match so far, with the exception that ffmpeg likes to pick either `dts` or `pts` and consider that value as both `pts` and `dts`.
+
