@@ -9,7 +9,7 @@ get time position of all keyframes in mp4/mkv/webm
 
 **url** - URL (http) to video file
 
-**container** - ``"matroska"`` or ``"mp4"``
+**container** - ``"matroska"`` (mkv or webm) or ``"mp4"``
 
 **cb** - ``callback(err, frames)``
 
@@ -30,3 +30,7 @@ get time position of all keyframes in mp4/mkv/webm
 ```bash
 ./cli.js http://ia902508.us.archive.org/17/items/CartoonClassics/Krazy_Kat_-_Keeping_Up_With_Krazy.mp4
 ```
+
+## Comparison with ffprobe
+
+A script is included - `keyframes.sh` - to compare results to ffprobe. All the results match so far, with the exception that ffmpeg likes to pick either `dts` or `pts` and consider that value as both `pts` and `dts`.
