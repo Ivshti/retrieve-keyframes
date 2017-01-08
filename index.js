@@ -94,6 +94,9 @@ function getForMp4(url, cb) {
 		lastOffset = offset;
 		pos = offset;
 		if (/^http(s?):\/\//.test(url)) {
+			// TODO: WARNING: we should check if the source supports range headers
+			// and if the returned range corresponds to the requested range
+			// Otherwise, we will eventually end up with a maxSeeks exception (as we would read the beginning of the file over and over, thinking it's actually the next part)
 			stream = needle.get(url, { headers: { range: "bytes="+offset+"-" } })
 			.on('error', cb)
 			.on('end', function(e) { if (e) cb(e) })
@@ -109,7 +112,7 @@ function getForMp4(url, cb) {
 	startStream(url, 0);
 
 	box.onError = cb;
-	
+
 	box.onReady = function(info) {
 		box.flush();
 		stream.close ? stream.close() : stream.end();
