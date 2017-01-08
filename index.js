@@ -58,6 +58,7 @@ function getForMkv(url, cb) {
 function getForMp4(url, cb) {	
 	var box = new mp4box.MP4Box();
 	var err, res, pos = 0;
+	var maxSeeks = 0;
 
 	function toArrayBuffer(buffer) {
 		var ab = new ArrayBuffer(buffer.length);
@@ -71,23 +72,44 @@ function getForMp4(url, cb) {
 		b.fileStart = pos;
 		pos += b.byteLength;
 		box.appendBuffer(b);
+		if (box.inputIsoFile.mdats.length && !box.inputIsoFile.moovStartFound) {
+			var offset = box.inputIsoFile.boxes.map(function(x) { return x.size }).reduce(function(a,b) { return a+b }, 0);
+			if (offset > lastOffset) {
+				if (maxSeeks > 3) {
+					stream.close ? stream.close() : stream.end();
+					return cb(new Error('maxSeeks exceeded'));
+				}
+				maxSeeks++;
+
+				stream.close ? stream.close() : stream.end();
+				startStream(url, offset);
+			}
+		}
 	}
 
-	var stream;
-	if (/^http(s?):\/\//.test(url)) {
-		stream = needle.get(url)
-		.on('error', cb)
-		.on('end', function(e) { box.flush(); if (e) cb(e) })
-		.on('data', onData)
-	} else {
-		stream = fs.createReadStream(url)
-		.on('error', cb)
-		.on('end', function() { box.flush() })
-		.on('data', onData)
+	var stream, lastOffset = 0;
+
+	function startStream(url, offset) {
+		//console.log("open stream at "+offset);
+		lastOffset = offset;
+		pos = offset;
+		if (/^http(s?):\/\//.test(url)) {
+			stream = needle.get(url, { headers: { range: "bytes="+offset+"-" } })
+			.on('error', cb)
+			.on('end', function(e) { if (e) cb(e) })
+			.on('data', onData)
+		} else {
+			stream = fs.createReadStream(url, { start: offset })
+			.on('error', cb)
+			.on('end', function() { box.flush() })
+			.on('data', onData)
+		}
 	}
 
+	startStream(url, 0);
 
 	box.onError = cb;
+	
 	box.onReady = function(info) {
 		box.flush();
 		stream.close ? stream.close() : stream.end();
