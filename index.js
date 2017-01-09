@@ -124,7 +124,9 @@ function getForMp4(url, cb) {
 		//var samples = box.inputIsoFile.moov.traks[0].samples;
 
 		try {
-			var track = box.inputIsoFile.moov.traks[0];
+			var track = box.inputIsoFile.moov.traks.filter(function(t) {
+				return t.mdia.minf.stbl.stss
+			})[0];
 
 			//var stsz = track.mdia.minf.stbl.stsz; // sample table sizes - that's in bytes
 			var stts = track.mdia.minf.stbl.stts; // sample table time to sample map
