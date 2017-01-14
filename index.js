@@ -33,6 +33,8 @@ function getForMkv(url, cb) {
 	var decoder = new mkv.Decoder(onlySeekCues());
 	decoder.parseEbmlIDs(url, [ mkv.Schema.byName.Cues ], function(err, doc) {
 		if (err) return cb(err);
+
+		var videoTrackIdx = 1; // WARNING: hardcoded
 		
 		var cues = atPath(doc, "Segment", "Cues");
 		if (! (cues && cues.children && cues.children.length)) return cb(new Error("no cues found in doc -> Segment -> Cues"));
@@ -41,10 +43,15 @@ function getForMkv(url, cb) {
 
 		if (! cues.length) return cb(new Error("no CuePoints"));
 
-		var frames = cues.map(function(cue) {
+		var frames = cues.filter(function(cue) {
+			// children[1] is CueTrackPositions; first child of that is CueTrack
+			// we need that to determine if this is a part of the video track
+			return cue.children[1].children[0].getUInt() === videoTrackIdx
+		}).map(function(cue) {
 			// children[0] is CueTime
 			// judging by this muxer, timestamp is pts: https://www.ffmpeg.org/doxygen/0.6/matroskaenc_8c-source.html#l00373
 			var t = cue.children[0].getUInt()
+
 			return { timestamp: t, pts: t, dts: t }
 		})
 
