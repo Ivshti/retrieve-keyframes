@@ -3,15 +3,14 @@ var mp4box = require('mp4box')
 var needle = require('needle')
 var fs = require('fs')
 
-function onlySeekCues() {
+function onlySeekCuesAndTracks() {
 	return {
 		skipTags: {
 			SimpleBlock: true,
 			Void: true,
 			Block: true,
 			FileData: true,
-			Cluster: true,
-			Tracks: true
+			Cluster: true
 		}
 	};
 }
@@ -30,12 +29,22 @@ function atPath() {
 	return data
 }
 function getForMkv(url, cb) {
-	var decoder = new mkv.Decoder(onlySeekCues());
-	decoder.parseEbmlIDs(url, [ mkv.Schema.byName.Cues ], function(err, doc) {
+	var decoder = new mkv.Decoder(onlySeekCuesAndTracks());
+	decoder.parseEbmlIDs(url, [ mkv.Schema.byName.Cues, mkv.Schema.byName.Tracks ], function(err, doc) {
 		if (err) return cb(err);
 
-		var videoTrackIdx = 1; // WARNING: hardcoded
-		
+		// First, select the video track
+		var videoTrackIdx = 1; // initial value
+		var tracks = atPath(doc, "Segment", "Tracks");
+		tracks.children.forEach(function(track) {
+			// https://matroska.org/technical/specs/index.html#Tracks
+			var trackNum = track.children[0].getUInt(); // TrackNumber
+			var trackType = track.children[2].getUInt(); // TrackType  (1: video, 2: audio, 3: complex, 0x10: logo, 0x11: subtitle, 0x12: buttons, 0x20: control).
+
+			if (trackType === 1) videoTrackIdx = trackNum;
+		});
+			
+		// Go through CuePoint(s) and filter out the ones which are from the video track
 		var cues = atPath(doc, "Segment", "Cues");
 		if (! (cues && cues.children && cues.children.length)) return cb(new Error("no cues found in doc -> Segment -> Cues"));
 
