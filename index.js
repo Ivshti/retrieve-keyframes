@@ -97,7 +97,6 @@ function getForMp4(url, cb) {
 				}
 				maxSeeks++;
 
-				stream.close ? stream.close() : stream.end();
 				startStream(url, offset);
 			}
 		}
@@ -107,6 +106,8 @@ function getForMp4(url, cb) {
 
 	function startStream(url, offset) {
 		//console.log("open stream at "+offset);
+		if (stream) stream.close ? stream.close() : stream.end();
+
 		lastOffset = offset;
 		pos = offset;
 		if (/^http(s?):\/\//.test(url)) {
@@ -127,7 +128,10 @@ function getForMp4(url, cb) {
 
 	startStream(url, 0);
 
-	box.onError = cb;
+	box.onError = function(err) {
+		stream.close ? stream.close() : stream.end();
+		cb(err);
+	};
 
 	box.onReady = function(info) {
 		box.flush();
