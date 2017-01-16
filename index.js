@@ -124,23 +124,23 @@ function getForMp4(url, cb) {
 			// and if the returned range corresponds to the requested range
 			// Otherwise, we will eventually end up with a maxSeeks exception (as we would read the beginning of the file over and over, thinking it's actually the next part)
 			stream = needle.get(url, { headers: { range: "bytes="+offset+"-" } })
-			.on('error', cb)
-			.on('end', function(e) { if (e) cb(e) })
+			.on('error', box.onError)
+			.on('end', function(e) { box.flush() })
 			.on('data', onData)
 		} else {
 			stream = fs.createReadStream(url, { start: offset })
-			.on('error', cb)
+			.on('error', box.onError)
 			.on('end', function() { box.flush() })
 			.on('data', onData)
 		}
 	}
 
-	startStream(url, 0);
-
 	box.onError = function(err) {
 		closeStream()
 		cb(err);
 	};
+
+	startStream(url, 0);
 
 	box.onReady = function(info) {
 		box.flush();
