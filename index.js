@@ -34,7 +34,7 @@ function getForMkv(url, cb) {
 		if (err) return cb(err);
 
 		// First, select the video track
-		var videoTrackIdx = 1; // initial value
+		var videoTrackIdx = -1; // initial value
 		var tracks = atPath(doc, "Segment", "Tracks");
 		tracks.children.forEach(function(track) {
 			// https://matroska.org/technical/specs/index.html#Tracks
@@ -43,6 +43,8 @@ function getForMkv(url, cb) {
 
 			if (trackType === 1) videoTrackIdx = trackNum;
 		});
+
+		if (videoTrackIdx === -1) return cb(new Error('no video tracks found'))
 			
 		// Go through CuePoint(s) and filter out the ones which are from the video track
 		var cues = atPath(doc, "Segment", "Cues");
