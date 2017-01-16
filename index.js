@@ -104,9 +104,18 @@ function getForMp4(url, cb) {
 
 	var stream, lastOffset = 0;
 
+	function closeStream() {
+		if (!stream) return;
+
+		// credit to mafintosh/pump
+		if (stream instanceof fs.ReadStream && typeof(stream.close) === 'function') return stream.close() // use close for fs streams to avoid fd leaks
+		if (stream.request && typeof(stream.request.abort) === 'function') return stream.request.abort() // request.destroy just do .end - .abort is what we want
+		if (typeof(stream.destroy) === 'function') return stream.destroy()
+	}
+
 	function startStream(url, offset) {
 		//console.log("open stream at "+offset);
-		if (stream) stream.close ? stream.close() : stream.end();
+		closeStream()
 
 		lastOffset = offset;
 		pos = offset;
@@ -129,13 +138,13 @@ function getForMp4(url, cb) {
 	startStream(url, 0);
 
 	box.onError = function(err) {
-		stream.close ? stream.close() : stream.end();
+		closeStream()
 		cb(err);
 	};
 
 	box.onReady = function(info) {
 		box.flush();
-		stream.close ? stream.close() : stream.end();
+		closeStream();
 
 		if (!info) return cb(new Error("no info returned"));
 		if (!info.videoTracks[0]) return cb(new Error("no videoTracks[0]"))
