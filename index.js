@@ -28,6 +28,11 @@ function atPath() {
 	}
 	return data
 }
+
+function findById(all, name) {
+	return all.filter(function(x) { return x._name === name })[0]
+}
+
 function getForMkv(url, cb) {
 	var decoder = new mkv.Decoder(onlySeekCuesAndTracks());
 	decoder.parseEbmlIDs(url, [ mkv.Schema.byName.Cues, mkv.Schema.byName.Tracks ], function(err, doc) {
@@ -38,8 +43,8 @@ function getForMkv(url, cb) {
 		var tracks = atPath(doc, "Segment", "Tracks");
 		tracks.children.forEach(function(track) {
 			// https://matroska.org/technical/specs/index.html#Tracks
-			var trackNum = track.children[0].getUInt(); // TrackNumber
-			var trackType = track.children[2].getUInt(); // TrackType  (1: video, 2: audio, 3: complex, 0x10: logo, 0x11: subtitle, 0x12: buttons, 0x20: control).
+			var trackNum = findById(track.children, "TrackNumber").getUInt(); // TrackNumber
+			var trackType = findById(track.children, "TrackType").getUInt(); // TrackType  (1: video, 2: audio, 3: complex, 0x10: logo, 0x11: subtitle, 0x12: buttons, 0x20: control).
 
 			if (trackType === 1) videoTrackIdx = trackNum;
 		});
