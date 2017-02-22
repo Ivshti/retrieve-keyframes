@@ -42,6 +42,8 @@ function getForMkv(url, cb) {
 		var videoTrackIdx = -1; // initial value
 		var tracks = atPath(doc, "Segment", "Tracks");
 		tracks.children.forEach(function(track) {
+			if (! track.children) return;
+			
 			// https://matroska.org/technical/specs/index.html#Tracks
 			var trackNum = findById(track.children, "TrackNumber").getUInt(); // TrackNumber
 			var trackType = findById(track.children, "TrackType").getUInt(); // TrackType  (1: video, 2: audio, 3: complex, 0x10: logo, 0x11: subtitle, 0x12: buttons, 0x20: control).
