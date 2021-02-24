@@ -50,7 +50,7 @@ function getFramesFromBox(box)
 }
 
 function getForMp4(url, cb) {	
-	var box = new mp4box.MP4Box();
+	var box = mp4box.createFile();
 	var err, res, pos = 0;
 	var maxSeeks = 0;
 
