@@ -66,8 +66,8 @@ function getForMp4(url, cb) {
 		b.fileStart = pos;
 		pos += b.byteLength;
 		box.appendBuffer(b);
-		if (box.inputIsoFile.mdats.length && !box.inputIsoFile.moovStartFound) {
-			var offset = box.inputIsoFile.boxes.map(function(x) { return x.size }).reduce(function(a,b) { return a+b }, 0);
+		if (box.mdats.length && !box.moovStartFound) {
+			var offset = box.boxes.map(function(x) { return x.size }).reduce(function(a,b) { return a+b }, 0);
 			if (offset > lastOffset) {
 				if (maxSeeks > 3) {
 					stream.close ? stream.close() : stream.end();
