@@ -12,9 +12,9 @@ function iterateCounts(counts, values, fn) {
 
 function getFramesFromBox(box)
 {
-	//box.inputIsoFile.buildSampleLists();
-	//var samples = box.inputIsoFile.moov.traks[0].samples;
-	var track = box.inputIsoFile.moov.traks.filter(function(t) {
+	//box.buildSampleLists();
+	//var samples = box.moov.traks[0].samples;
+	var track = box.moov.traks.filter(function(t) {
 		return t.mdia.minf.stbl.stss
 	})[0];
 
